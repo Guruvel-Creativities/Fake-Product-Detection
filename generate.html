@@ -1,61 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Original Product QR Generator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: white; text-align: center; margin: 0; padding: 0;
-  }
-  .container {
-    max-width: 400px; margin: 80px auto; background: rgba(255,255,255,0.1);
-    padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.3);
-  }
-  h2 { margin-bottom: 20px; }
-  input {
-    width: 90%; padding: 10px; border: none; border-radius: 8px;
-    font-size: 16px; margin-bottom: 15px;
-  }
-  button {
-    background: #1abc9c; border: none; color: white; font-size: 16px;
-    padding: 10px 20px; border-radius: 8px; cursor: pointer;
-    transition: background 0.3s;
-  }
-  button:hover { background: #16a085; }
-  canvas { margin-top: 25px; background: white; border-radius: 10px; padding: 10px; }
-  footer { margin-top: 40px; font-size: 13px; opacity: 0.8; }
-</style>
+  <meta charset="UTF-8">
+  <title>Generate Product QR | Secure QR System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f0f4f9;
+      color: #333;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #1a73e8;
+      margin-bottom: 10px;
+    }
+    .container {
+      background: #fff;
+      display: inline-block;
+      padding: 25px 35px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      margin-top: 30px;
+      width: 90%;
+      max-width: 420px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 22px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .btn:hover {
+      background: #0d47a1;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: 500;
+    }
+    footer {
+      margin-top: 40px;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
+
+  <h1>🧾 Generate Secure Product QR Codes</h1>
   <div class="container">
-    <h2>🔐 Generate Original Product QR</h2>
-    <input id="productId" placeholder="Enter Product ID">
-    <br>
-    <button onclick="generateQR()">Generate QR</button>
-    <br>
-    <canvas id="qrCanvas"></canvas>
+    <input id="productInput" type="text" placeholder="Enter Product ID or Name">
+    <input id="countInput" type="number" placeholder="Enter Number of QR Codes" min="1">
+    <button class="btn" onclick="generateQRCodes()">Generate ZIP</button>
     <p id="status"></p>
   </div>
-  <footer>© 2025 Product Authenticity Dashboard</footer>
 
-<script>
-const SECRET_KEY = "MySecretProjectKey123";
+  <footer>© 2025 Secure QR System | AES-Encrypted QR Generator</footer>
 
-function generateQR() {
-  const id = document.getElementById("productId").value.trim();
-  if (!id) return alert("Enter Product ID");
-  const encrypted = CryptoJS.AES.encrypt(id, SECRET_KEY).toString();
-  const qrData = JSON.stringify({ type: "original", code: encrypted });
-  QRCode.toCanvas(document.getElementById("qrCanvas"), qrData, { width: 200 }, err => {
-    if (err) return console.error(err);
-    document.getElementById("status").innerHTML = "✅ QR Generated Successfully";
-  });
-}
-</script>
+  <script>
+    const AES_KEY = "MY_SECRET_AES_KEY"; // Must match verify.html
+
+    async function generateQRCodes() {
+      const product = document.getElementById("productInput").value.trim();
+      const count = parseInt(document.getElementById("countInput").value);
+      const status = document.getElementById("status");
+
+      if (!product || !count || count <= 0) {
+        alert("Please enter valid product name and number of QR codes.");
+        return;
+      }
+
+      status.textContent = "Generating " + count + " encrypted QR codes... Please wait ⏳";
+
+      const zip = new JSZip();
+      const folder = zip.folder("QR_Codes");
+      const qr = new QRious({ size: 250 });
+
+      for (let i = 1; i <= count; i++) {
+        // Unique serial number for each QR
+        const serial = `${product}_${i.toString().padStart(3, '0')}`;
+        const encrypted = CryptoJS.AES.encrypt(serial, AES_KEY).toString();
+
+        qr.value = encrypted;
+        const imgData = qr.toDataURL("image/png");
+
+        // Add to zip folder
+        const base64Data = imgData.split(',')[1];
+        folder.file(`QR_${serial}.png`, base64Data, { base64: true });
+      }
+
+      // Generate and download zip
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `${product}_QRCodes.zip`);
+      status.textContent = "✅ " + count + " QR codes generated and downloaded as ZIP!";
+    }
+  </script>
 </body>
 </html>
