@@ -1,63 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Verify Product Authenticity</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js"></script>
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #232526, #414345);
-    color: white; text-align: center; margin: 0; padding: 0;
-  }
-  .container {
-    max-width: 420px; margin: 60px auto; background: rgba(255,255,255,0.1);
-    padding: 25px; border-radius: 15px; box-shadow: 0 0 15px rgba(0,0,0,0.4);
-  }
-  video {
-    width: 100%; border-radius: 10px; margin-top: 15px;
-  }
-  #result {
-    margin-top: 20px; font-size: 18px; font-weight: bold;
-    padding: 10px; border-radius: 8px;
-  }
-  .ok { background: rgba(46,204,113,0.2); color: #2ecc71; }
-  .fail { background: rgba(231,76,60,0.2); color: #e74c3c; }
-</style>
+  <meta charset="UTF-8">
+  <title>Verify Product | Secure QR System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f0f4f9;
+      color: #333;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #1a73e8;
+      margin-bottom: 20px;
+    }
+    #reader {
+      width: 300px;
+      margin: 20px auto;
+      border: 2px solid #1a73e8;
+      border-radius: 10px;
+    }
+    #resultBox {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 500;
+      display: inline-block;
+      min-width: 250px;
+    }
+    .valid {
+      background: #e6ffe6;
+      color: #007e33;
+      border: 2px solid #00c851;
+    }
+    .invalid {
+      background: #ffe6e6;
+      color: #c00;
+      border: 2px solid #ff4444;
+    }
+    footer {
+      margin-top: 40px;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>🔎 Product Verification</h2>
-    <video id="cam"></video>
-    <div id="result">Align QR in camera view...</div>
-  </div>
+  <h1>🔍 Verify Product Authenticity</h1>
+  <p>Allow camera access to scan the QR code on the product.</p>
 
-<script>
-const SECRET_KEY = "MySecretProjectKey123";
-const videoElem = document.getElementById("cam");
-const resultElem = document.getElementById("result");
+  <div id="reader"></div>
+  <div id="resultBox">Waiting for scan...</div>
 
-const scanner = new QrScanner(videoElem, result => verify(result.data || result), { highlightScanRegion: true });
-scanner.start();
+  <footer>© 2025 Secure QR System</footer>
 
-function verify(qrData) {
-  try {
-    const obj = JSON.parse(qrData);
-    const decrypted = CryptoJS.AES.decrypt(obj.code, SECRET_KEY).toString(CryptoJS.enc.Utf8);
-    if (decrypted) {
-      resultElem.innerHTML = `✅ ORIGINAL PRODUCT<br>ID: ${decrypted}`;
-      resultElem.className = "ok";
-    } else {
-      resultElem.innerHTML = "❌ DUPLICATE OR INVALID PRODUCT";
-      resultElem.className = "fail";
+  <script>
+    const AES_KEY = "MY_SECRET_AES_KEY"; // Must match key in generate.html
+
+    function decryptQRCode(cipherText) {
+      try {
+        const bytes = CryptoJS.AES.decrypt(cipherText, AES_KEY);
+        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+        return decrypted || null;
+      } catch (e) {
+        return null;
+      }
     }
-  } catch (e) {
-    resultElem.innerHTML = "❌ INVALID QR FORMAT";
-    resultElem.className = "fail";
-  }
-}
-</script>
+
+    function onScanSuccess(decodedText) {
+      const resultBox = document.getElementById("resultBox");
+      const decrypted = decryptQRCode(decodedText);
+      if (decrypted) {
+        resultBox.textContent = "✅ Original Product: " + decrypted;
+        resultBox.className = "valid";
+      } else {
+        resultBox.textContent = "❌ Duplicate / Tampered Product!";
+        resultBox.className = "invalid";
+      }
+    }
+
+    // Start camera after permission
+    document.addEventListener("DOMContentLoaded", async () => {
+      const html5QrCode = new Html5Qrcode("reader");
+
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length) {
+          const cameraId = devices[0].id;
+          html5QrCode.start(
+            cameraId,
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            onScanSuccess
+          );
+        }
+      } catch (err) {
+        alert("Camera access denied or unavailable: " + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
