@@ -16,11 +16,12 @@
     }
     h1 {
       color: #1a73e8;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     #reader {
       width: 300px;
       margin: 20px auto;
+      display: none;
       border: 2px solid #1a73e8;
       border-radius: 10px;
     }
@@ -43,64 +44,104 @@
       color: #c00;
       border: 2px solid #ff4444;
     }
+    .btn {
+      display: inline-block;
+      padding: 12px 22px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 25px;
+    }
+    .btn:hover {
+      background: #0d47a1;
+    }
     footer {
-      margin-top: 40px;
+      margin-top: 50px;
       color: #777;
     }
   </style>
 </head>
 <body>
   <h1>🔍 Verify Product Authenticity</h1>
-  <p>Allow camera access to scan the QR code on the product.</p>
+  <p>Click below to start scanning the product QR code.</p>
 
+  <button id="scanBtn" class="btn">📷 Scan QR Code</button>
   <div id="reader"></div>
   <div id="resultBox">Waiting for scan...</div>
 
   <footer>© 2025 Secure QR System</footer>
 
   <script>
-    const AES_KEY = "MY_SECRET_AES_KEY"; // Must match key in generate.html
+    const AES_KEY = "MY_SECRET_AES_KEY"; // Same as generate.html
 
     function decryptQRCode(cipherText) {
       try {
         const bytes = CryptoJS.AES.decrypt(cipherText, AES_KEY);
         const decrypted = bytes.toString(CryptoJS.enc.Utf8);
         return decrypted || null;
-      } catch (e) {
+      } catch {
         return null;
       }
     }
 
-    function onScanSuccess(decodedText) {
+    let html5QrCode;
+
+    async function startScanning() {
+      const reader = document.getElementById("reader");
+      const btn = document.getElementById("scanBtn");
       const resultBox = document.getElementById("resultBox");
-      const decrypted = decryptQRCode(decodedText);
-      if (decrypted) {
-        resultBox.textContent = "✅ Original Product: " + decrypted;
-        resultBox.className = "valid";
-      } else {
-        resultBox.textContent = "❌ Duplicate / Tampered Product!";
-        resultBox.className = "invalid";
+
+      reader.style.display = "block";
+      btn.disabled = true;
+      btn.textContent = "Scanning...";
+
+      html5QrCode = new Html5Qrcode("reader");
+      try {
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras.length) throw new Error("No camera found");
+        const cameraId = cameras[0].id;
+
+        html5QrCode.start(
+          cameraId,
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => {
+            const decrypted = decryptQRCode(decodedText);
+            if (decrypted) {
+              resultBox.textContent = "✅ Original Product: " + decrypted;
+              resultBox.className = "valid";
+            } else {
+              resultBox.textContent = "❌ Duplicate / Tampered Product!";
+              resultBox.className = "invalid";
+            }
+            stopScanning();
+          },
+          (errorMsg) => {}
+        );
+      } catch (err) {
+        alert("Camera access failed: " + err.message);
+        btn.disabled = false;
+        btn.textContent = "📷 Scan QR Code";
       }
     }
 
-    // Start camera after permission
-    document.addEventListener("DOMContentLoaded", async () => {
-      const html5QrCode = new Html5Qrcode("reader");
-
-      try {
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length) {
-          const cameraId = devices[0].id;
-          html5QrCode.start(
-            cameraId,
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            onScanSuccess
-          );
-        }
-      } catch (err) {
-        alert("Camera access denied or unavailable: " + err.message);
+    async function stopScanning() {
+      const reader = document.getElementById("reader");
+      const btn = document.getElementById("scanBtn");
+      if (html5QrCode) {
+        await html5QrCode.stop();
+        html5QrCode.clear();
       }
-    });
+      reader.style.display = "none";
+      btn.disabled = false;
+      btn.textContent = "📷 Scan Again";
+    }
+
+    document.getElementById("scanBtn").addEventListener("click", startScanning);
   </script>
 </body>
 </html>
