@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Original Product QR Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white; text-align: center; margin: 0; padding: 0;
+  }
+  .container {
+    max-width: 400px; margin: 80px auto; background: rgba(255,255,255,0.1);
+    padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  }
+  h2 { margin-bottom: 20px; }
+  input {
+    width: 90%; padding: 10px; border: none; border-radius: 8px;
+    font-size: 16px; margin-bottom: 15px;
+  }
+  button {
+    background: #1abc9c; border: none; color: white; font-size: 16px;
+    padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover { background: #16a085; }
+  canvas { margin-top: 25px; background: white; border-radius: 10px; padding: 10px; }
+  footer { margin-top: 40px; font-size: 13px; opacity: 0.8; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔐 Generate Original Product QR</h2>
+    <input id="productId" placeholder="Enter Product ID">
+    <br>
+    <button onclick="generateQR()">Generate QR</button>
+    <br>
+    <canvas id="qrCanvas"></canvas>
+    <p id="status"></p>
+  </div>
+  <footer>© 2025 Product Authenticity Dashboard</footer>
+
+<script>
+const SECRET_KEY = "MySecretProjectKey123";
+
+function generateQR() {
+  const id = document.getElementById("productId").value.trim();
+  if (!id) return alert("Enter Product ID");
+  const encrypted = CryptoJS.AES.encrypt(id, SECRET_KEY).toString();
+  const qrData = JSON.stringify({ type: "original", code: encrypted });
+  QRCode.toCanvas(document.getElementById("qrCanvas"), qrData, { width: 200 }, err => {
+    if (err) return console.error(err);
+    document.getElementById("status").innerHTML = "✅ QR Generated Successfully";
+  });
+}
+</script>
+</body>
+</html>
