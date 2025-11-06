@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fake QR Generator (Duplicate)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #373B44, #4286f4);
+    color: white; text-align: center; margin: 0; padding: 0;
+  }
+  .container {
+    max-width: 400px; margin: 80px auto; background: rgba(255,255,255,0.1);
+    padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  }
+  input { width: 90%; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+  button {
+    background: #e74c3c; border: none; color: white; font-size: 16px;
+    padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover { background: #c0392b; }
+  canvas { margin-top: 25px; background: white; border-radius: 10px; padding: 10px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>🚫 Generate Duplicate / Fake QR</h2>
+    <input id="fakeId" placeholder="Enter Fake Product ID">
+    <br>
+    <button onclick="fakeQR()">Generate Fake QR</button>
+    <br>
+    <canvas id="qrCanvas"></canvas>
+    <p id="status"></p>
+  </div>
+<script>
+function fakeQR() {
+  const id = document.getElementById("fakeId").value.trim();
+  if (!id) return alert("Enter Product ID");
+  const qrData = JSON.stringify({ type: "fake", code: btoa(id) }); // not AES encrypted
+  QRCode.toCanvas(document.getElementById("qrCanvas"), qrData, { width: 200 }, err => {
+    if (err) return console.error(err);
+    document.getElementById("status").innerHTML = "⚠️ Fake QR Generated (Will show as duplicate)";
+  });
+}
+</script>
+</body>
+</html>
