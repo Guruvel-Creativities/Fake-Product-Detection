@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Verify Product Authenticity</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #232526, #414345);
+    color: white; text-align: center; margin: 0; padding: 0;
+  }
+  .container {
+    max-width: 420px; margin: 60px auto; background: rgba(255,255,255,0.1);
+    padding: 25px; border-radius: 15px; box-shadow: 0 0 15px rgba(0,0,0,0.4);
+  }
+  video {
+    width: 100%; border-radius: 10px; margin-top: 15px;
+  }
+  #result {
+    margin-top: 20px; font-size: 18px; font-weight: bold;
+    padding: 10px; border-radius: 8px;
+  }
+  .ok { background: rgba(46,204,113,0.2); color: #2ecc71; }
+  .fail { background: rgba(231,76,60,0.2); color: #e74c3c; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔎 Product Verification</h2>
+    <video id="cam"></video>
+    <div id="result">Align QR in camera view...</div>
+  </div>
+
+<script>
+const SECRET_KEY = "MySecretProjectKey123";
+const videoElem = document.getElementById("cam");
+const resultElem = document.getElementById("result");
+
+const scanner = new QrScanner(videoElem, result => verify(result.data || result), { highlightScanRegion: true });
+scanner.start();
+
+function verify(qrData) {
+  try {
+    const obj = JSON.parse(qrData);
+    const decrypted = CryptoJS.AES.decrypt(obj.code, SECRET_KEY).toString(CryptoJS.enc.Utf8);
+    if (decrypted) {
+      resultElem.innerHTML = `✅ ORIGINAL PRODUCT<br>ID: ${decrypted}`;
+      resultElem.className = "ok";
+    } else {
+      resultElem.innerHTML = "❌ DUPLICATE OR INVALID PRODUCT";
+      resultElem.className = "fail";
+    }
+  } catch (e) {
+    resultElem.innerHTML = "❌ INVALID QR FORMAT";
+    resultElem.className = "fail";
+  }
+}
+</script>
+</body>
+</html>
