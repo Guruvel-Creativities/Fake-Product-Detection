@@ -78,6 +78,7 @@
 
   <script>
     const AES_KEY = "MY_SECRET_AES_KEY"; // Same as generate.html
+    let html5QrCode;
 
     function decryptQRCode(cipherText) {
       try {
@@ -88,8 +89,6 @@
         return null;
       }
     }
-
-    let html5QrCode;
 
     async function startScanning() {
       const reader = document.getElementById("reader");
@@ -104,7 +103,14 @@
       try {
         const cameras = await Html5Qrcode.getCameras();
         if (!cameras.length) throw new Error("No camera found");
-        const cameraId = cameras[0].id;
+
+        // Try to pick the back/rear camera
+        let backCamera = cameras.find(c =>
+          c.label.toLowerCase().includes("back") ||
+          c.label.toLowerCase().includes("rear")
+        );
+
+        const cameraId = backCamera ? backCamera.id : cameras[0].id;
 
         html5QrCode.start(
           cameraId,
@@ -119,8 +125,7 @@
               resultBox.className = "invalid";
             }
             stopScanning();
-          },
-          (errorMsg) => {}
+          }
         );
       } catch (err) {
         alert("Camera access failed: " + err.message);
