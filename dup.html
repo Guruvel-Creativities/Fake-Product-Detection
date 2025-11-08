@@ -2,47 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Security Demo: QR Code Tampering Detection</title>
+  <title>Create Duplicate QR | Secure QR System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Educational demo showing how QR code tampering can be detected">
-
-  <!-- AES Encryption -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <!-- QRCode Generator - Using QRious like generate.html -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <!-- ZIP Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
   <style>
     :root {
-      --primary: #4286f4;
-      --danger: #e74c3c;
-      --warning: #f39c12;
-      --success: #2ecc71;
-      --dark: #373B44;
-      --light: #ffffff;
-      --gray: #7f8c8d;
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      --primary: #1a73e8;
+      --primary-dark: #0d47a1;
+      --danger: #ff4444;
+      --light-bg: #f0f4f9;
+      --white: #ffffff;
+      --gray: #777;
+      --dark: #333;
     }
     
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, var(--dark), var(--primary));
-      color: #333;
-      line-height: 1.6;
+      font-family: "Segoe UI", sans-serif;
+      background: var(--light-bg);
+      color: var(--dark);
+      text-align: center;
+      padding: 40px 20px;
       min-height: 100vh;
-      padding: 20px;
     }
 
     .header {
-      text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 10px;
     }
 
     .back-btn {
@@ -56,561 +48,172 @@
       border-radius: 8px;
       font-weight: 600;
       transition: background 0.3s ease;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
 
     .back-btn:hover {
-      background: #0d47a1;
-    }
-
-    .app-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .app-container {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Left Panel - Demo Interface */
-    .demo-panel {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    }
-
-    .demo-header {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-
-    .demo-header h1 {
-      color: var(--dark);
-      font-size: 28px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
+      background: var(--primary-dark);
     }
 
     .warning-banner {
-      background: rgba(231, 76, 60, 0.1);
-      border: 1px solid var(--danger);
-      border-left: 4px solid var(--danger);
+      background: #ffebee;
+      border: 2px solid var(--danger);
       padding: 15px;
-      margin-bottom: 25px;
-      border-radius: 0 8px 8px 0;
+      border-radius: 8px;
+      margin: 20px auto;
+      max-width: 500px;
+      color: var(--danger);
+      font-weight: 500;
     }
 
-    .input-section {
-      margin-bottom: 20px;
+    .container {
+      background: var(--white);
+      display: inline-block;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      margin-top: 20px;
+      width: 90%;
+      max-width: 450px;
     }
 
-    .input-section label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--dark);
-    }
-
-    .input-section input {
+    input {
       width: 100%;
       padding: 12px 15px;
+      font-size: 16px;
+      margin: 10px 0 20px;
       border: 2px solid #e1e5e9;
       border-radius: 8px;
-      font-size: 16px;
       transition: border-color 0.3s ease;
     }
 
-    .input-section input:focus {
+    input:focus {
       outline: none;
       border-color: var(--primary);
     }
 
-    .button-group {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 25px;
-    }
-
-    button {
-      flex: 1;
-      padding: 12px 20px;
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      color: var(--white);
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background 0.3s ease;
+      width: 100%;
+      margin: 5px 0;
     }
 
-    button:active {
-      transform: translateY(2px);
-    }
-
-    #genSingleBtn {
+    .btn-danger {
       background: var(--danger);
-      color: white;
     }
 
-    #genSingleBtn:hover {
-      background: #c0392b;
+    .btn-danger:hover {
+      background: #cc0000;
     }
 
-    #genZipBtn {
-      background: var(--warning);
-      color: white;
+    .btn-primary {
+      background: var(--primary);
     }
 
-    #genZipBtn:hover {
-      background: #e67e22;
-    }
-
-    #resetBtn {
-      background: var(--gray);
-      color: white;
-    }
-
-    #resetBtn:hover {
-      background: #6c7a7d;
-    }
-
-    .info-box {
-      background: rgba(52, 152, 219, 0.1);
-      border: 1px solid #3498db;
-      border-left: 4px solid #3498db;
-      padding: 15px;
-      border-radius: 0 8px 8px 0;
-      margin-bottom: 25px;
-    }
-
-    .qr-display {
-      text-align: center;
-      padding: 20px;
-      border: 2px dashed #e1e5e9;
-      border-radius: 8px;
-      margin-top: 20px;
-      display: none;
+    .btn-primary:hover {
+      background: var(--primary-dark);
     }
 
     #status {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 6px;
-      font-weight: 600;
-    }
-
-    .status-warning {
-      background: rgba(231, 76, 60, 0.1);
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 500;
+      background: #ffebee;
       color: var(--danger);
-      border: 1px solid rgba(231, 76, 60, 0.3);
-    }
-
-    .status-success {
-      background: rgba(46, 204, 113, 0.1);
-      color: var(--success);
-      border: 1px solid rgba(46, 204, 113, 0.3);
-    }
-
-    /* Right Panel - Technical Details */
-    .tech-panel {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    }
-
-    .tech-section {
-      margin-bottom: 30px;
-    }
-
-    .tech-section h3 {
-      color: var(--dark);
-      margin-bottom: 15px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid #e1e5e9;
-    }
-
-    .file-list {
-      list-style: none;
-    }
-
-    .file-list li {
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f2f6;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .file-list li::before {
-      content: "📄";
-    }
-
-    .request-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    .request-table th,
-    .request-table td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #f1f2f6;
-    }
-
-    .request-table th {
-      background: #f8f9fa;
-      font-weight: 600;
-    }
-
-    .console-output {
-      background: #2c3e50;
-      color: #ecf0f1;
-      padding: 15px;
-      border-radius: 6px;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      margin-top: 10px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .console-line {
-      margin-bottom: 5px;
-    }
-
-    .console-warning {
-      color: #f39c12;
-    }
-
-    .console-success {
-      color: #2ecc71;
-    }
-
-    .resources-list {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 6px;
-      border-left: 4px solid var(--warning);
+      border: 1px solid #ffcdd2;
     }
 
     footer {
-      grid-column: 1 / -1;
-      text-align: center;
-      margin-top: 30px;
-      color: white;
-      font-size: 14px;
-    }
-
-    .security-badge {
-      display: inline-block;
-      background: var(--success);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-left: 10px;
-    }
-
-    /* QR Code Image Styling */
-    #qrImage {
-      max-width: 250px;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      margin-top: 40px;
+      color: var(--gray);
     }
   </style>
 </head>
 <body>
+
   <div class="header">
-    <a href="index.html" class="back-btn">
-      ← Back to Home
-    </a>
+    <a href="index.html" class="back-btn">← Back to Home</a>
+    <h1>🚫 Create Duplicate QR Codes</h1>
   </div>
 
-  <div class="app-container">
-    <!-- Left Panel - Demo Interface -->
-    <div class="demo-panel">
-      <div class="demo-header">
-        <h1><span>🔒</span> Security Demo: QR Code Tampering Detection</h1>
-      </div>
-      
-      <div class="warning-banner">
-        <strong>Educational Purpose Only:</strong> This demo shows how tampered QR codes can be detected. Do not use for malicious purposes.
-      </div>
-      
-      <div class="input-section">
-        <label for="fakeId">Enter Product ID to demonstrate tampering:</label>
-        <input id="fakeId" type="text" placeholder="Enter Product ID (e.g. GC01)">
-      </div>
-
-      <div class="input-section">
-        <label for="countInput">Number of QR Codes to Generate:</label>
-        <input id="countInput" type="number" placeholder="Enter number (e.g., 5)" min="1" value="1">
-      </div>
-      
-      <div class="button-group">
-        <button id="genSingleBtn">Show QR Here</button>
-        <button id="genZipBtn">Generate ZIP with Multiple QRs</button>
-      </div>
-
-      <div class="button-group">
-        <button id="resetBtn">Reset</button>
-      </div>
-      
-      <div class="info-box">
-        <strong>How this works:</strong> This demo uses a tampered encryption key to generate QR codes that would be flagged as duplicates during verification. This demonstrates security measures against counterfeit products.
-      </div>
-      
-      <div class="qr-display" id="qrContainer">
-        <img id="qrImage" style="display: none;">
-        <div id="status" class="status-warning">&nbsp;</div>
-      </div>
-    </div>
-
-    <!-- Right Panel - Technical Details -->
-    <div class="tech-panel">
-      <div class="tech-section">
-        <h3>📁 Files Loaded</h3>
-        <ul class="file-list">
-          <li>dupl.html</li>
-          <li>crypto-js.min.js</li>
-          <li>qrious.min.js</li>
-          <li>jszip.min.js</li>
-          <li>FileSaver.min.js</li>
-        </ul>
-      </div>
-
-      <div class="tech-section">
-        <h3>🌐 Network Requests</h3>
-        <table class="request-table">
-          <tr>
-            <th>Request URL</th>
-            <td>https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js</td>
-          </tr>
-          <tr>
-            <th>Request Method</th>
-            <td>GET</td>
-          </tr>
-          <tr>
-            <th>Status Code</th>
-            <td>200 <span class="security-badge">OK</span></td>
-          </tr>
-          <tr>
-            <th>Referrer Policy</th>
-            <td>strict-origin-when-cross-origin</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="tech-section">
-        <h3>📋 Response Headers</h3>
-        <div class="console-output">
-          <div class="console-line">content-type: application/javascript; charset=utf-8</div>
-          <div class="console-line">cache-control: public, max-age=31536000</div>
-          <div class="console-line">access-control-allow-origin: *</div>
-        </div>
-      </div>
-
-      <div class="tech-section">
-        <h3>💻 Console Output</h3>
-        <div class="console-output" id="consoleOutput">
-          <div class="console-line">> QR Code library (QRious) loaded successfully</div>
-          <div class="console-line">> CryptoJS library initialized</div>
-          <div class="console-line">> ZIP libraries loaded</div>
-          <div class="console-line console-warning">> Security: Demo mode active - generating tampered QR codes</div>
-          <div class="console-line">> Ready for user input...</div>
-        </div>
-      </div>
-
-      <div class="tech-section">
-        <h3>📊 Affected Resources</h3>
-        <div class="resources-list">
-          <strong>Request:</strong> qrious.min.js<br>
-          <strong>Status:</strong> Loaded successfully from CDN
-        </div>
-        <div style="margin-top: 10px; font-size: 12px; color: var(--gray);">
-          Learn more: <a href="#" style="color: var(--primary);">CORB explainer</a>
-        </div>
-      </div>
-    </div>
-
-    <footer>
-      <p>© 2025 Secure QR System - Educational Demo | This demonstration shows security measures, not encourages misuse.</p>
-    </footer>
+  <div class="warning-banner">
+    ⚠️ Educational Purpose Only: For testing duplicate detection systems
   </div>
+
+  <div class="container">
+    <input id="productInput" type="text" placeholder="Enter Product ID or Name">
+    <input id="countInput" type="number" placeholder="Enter Number of QR Codes" min="1" value="1">
+    
+    <button class="btn btn-danger" onclick="generateDuplicateQR()">Generate Single Duplicate QR</button>
+    <button class="btn btn-primary" onclick="generateDuplicateZIP()">Generate ZIP with Multiple Duplicates</button>
+    
+    <p id="status"></p>
+  </div>
+
+  <footer>© 2025 Secure QR System | Security Testing Tool</footer>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const AES_KEY = "MY_SECRET_AES_KEY";
-      const fakeInput = document.getElementById('fakeId');
-      const countInput = document.getElementById('countInput');
-      const genSingleBtn = document.getElementById('genSingleBtn');
-      const genZipBtn = document.getElementById('genZipBtn');
-      const resetBtn = document.getElementById('resetBtn');
-      const status = document.getElementById('status');
-      const qrImage = document.getElementById('qrImage');
-      const qrContainer = document.getElementById('qrContainer');
-      const consoleOutput = document.getElementById('consoleOutput');
+    const AES_KEY = "MY_SECRET_AES_KEY";
 
-      // Library availability check
-      if (typeof QRious === 'undefined' || typeof CryptoJS === 'undefined' || typeof JSZip === 'undefined') {
-        status.innerText = '❌ Required libraries failed to load. Please check your internet connection.';
-        status.className = 'status-warning';
-        genSingleBtn.disabled = true;
-        genZipBtn.disabled = true;
+    function generateDuplicateQR() {
+      const product = document.getElementById("productInput").value.trim();
+      const status = document.getElementById("status");
+
+      if (!product) {
+        alert("Please enter a product name.");
         return;
       }
 
-      // Update console output
-      function updateConsole(message, isWarning = false, isSuccess = false) {
-        const line = document.createElement('div');
-        let className = 'console-line';
-        if (isWarning) className += ' console-warning';
-        if (isSuccess) className += ' console-success';
-        line.className = className;
-        line.textContent = message;
-        consoleOutput.appendChild(line);
-        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      // Use tampered key to create invalid QR
+      const tamperedKey = AES_KEY + '_tampered';
+      const fakeCipher = CryptoJS.AES.encrypt(product, tamperedKey).toString();
+      
+      status.innerHTML = `⚠️ Duplicate QR code generated for: <strong>${product}</strong><br>This will be detected as INVALID during verification!`;
+    }
+
+    async function generateDuplicateZIP() {
+      const product = document.getElementById("productInput").value.trim();
+      const count = parseInt(document.getElementById("countInput").value);
+      const status = document.getElementById("status");
+
+      if (!product || !count || count <= 0) {
+        alert("Please enter valid product name and number of QR codes.");
+        return;
       }
 
-      updateConsole('> QR Code library (QRious) loaded successfully');
-      updateConsole('> CryptoJS library initialized');
-      updateConsole('> ZIP libraries loaded');
-      updateConsole('> Security: Demo mode active - generating tampered QR codes', true);
-      updateConsole('> Ready for user input...');
+      status.textContent = "Generating " + count + " duplicate QR codes... Please wait ⏳";
 
-      // Generate single QR code
-      genSingleBtn.addEventListener('click', function () {
-        const id = fakeInput.value.trim();
-        const count = parseInt(countInput.value) || 1;
+      const zip = new JSZip();
+      const folder = zip.folder("Duplicate_QR_Codes");
+      const tamperedKey = AES_KEY + '_tampered';
 
-        if (!id) {
-          alert('⚠️ Please enter a Product ID');
-          return;
-        }
+      for (let i = 1; i <= count; i++) {
+        const serial = `${product}_${i.toString().padStart(3, '0')}`;
+        const fakeCipher = CryptoJS.AES.encrypt(serial, tamperedKey).toString();
 
-        // Hide previous QR code
-        qrImage.style.display = 'none';
-        
-        // Use tampered key to simulate fake QR
-        const tamperedKey = AES_KEY + '_tampered';
-        const fakeCipher = CryptoJS.AES.encrypt(id, tamperedKey).toString();
+        const qr = new QRious({ 
+          value: fakeCipher,
+          size: 250 
+        });
 
-        qrContainer.style.display = 'block';
+        const imgData = qr.toDataURL("image/png");
+        const base64Data = imgData.split(',')[1];
+        folder.file(`Duplicate_${serial}.png`, base64Data, { base64: true });
+      }
 
-        try {
-          // Generate QR code using QRious
-          const qr = new QRious({
-            element: document.createElement('canvas'),
-            value: fakeCipher,
-            size: 250,
-            level: 'H'
-          });
-
-          // Convert to data URL and display
-          qrImage.src = qr.toDataURL();
-          qrImage.style.display = 'block';
-          
-          status.innerHTML = `⚠️ <strong>Tampered QR Generated</strong> — This would be flagged as <strong>DUPLICATE/INVALID</strong> during verification!`;
-          status.className = 'status-warning';
-          
-          updateConsole(`> Generated single tampered QR for product ID: ${id}`);
-          updateConsole('> SECURITY WARNING: This QR code uses tampered encryption and would be rejected by verification systems', true);
-
-        } catch (e) {
-          console.error('Unexpected error:', e);
-          status.innerText = '❌ Unexpected error. See console for details.';
-          status.className = 'status-warning';
-          updateConsole('> ERROR: Failed to generate QR code', true);
-        }
-      });
-
-      // Generate multiple QR codes in ZIP
-      genZipBtn.addEventListener('click', async function () {
-        const id = fakeInput.value.trim();
-        const count = parseInt(countInput.value) || 1;
-
-        if (!id) {
-          alert('⚠️ Please enter a Product ID');
-          return;
-        }
-
-        if (count < 1) {
-          alert('⚠️ Please enter a valid number of QR codes');
-          return;
-        }
-
-        status.innerHTML = `⏳ Generating ${count} tampered QR codes... Please wait`;
-        status.className = 'status-warning';
-        qrContainer.style.display = 'block';
-        qrImage.style.display = 'none';
-
-        try {
-          const zip = new JSZip();
-          const folder = zip.folder("Tampered_QR_Codes");
-          const tamperedKey = AES_KEY + '_tampered';
-
-          updateConsole(`> Starting generation of ${count} tampered QR codes for: ${id}`);
-
-          for (let i = 1; i <= count; i++) {
-            // Create unique serial for each QR
-            const serial = `${id}_${i.toString().padStart(3, '0')}`;
-            const fakeCipher = CryptoJS.AES.encrypt(serial, tamperedKey).toString();
-
-            // Generate QR code
-            const qr = new QRious({
-              element: document.createElement('canvas'),
-              value: fakeCipher,
-              size: 250,
-              level: 'H'
-            });
-
-            // Convert to base64 and add to zip
-            const imgData = qr.toDataURL();
-            const base64Data = imgData.split(',')[1];
-            folder.file(`Tampered_${serial}.png`, base64Data, { base64: true });
-
-            updateConsole(`> Generated QR ${i}/${count}: ${serial}`);
-          }
-
-          // Generate and download zip
-          const content = await zip.generateAsync({ type: "blob" });
-          saveAs(content, `Tampered_${id}_QRCodes.zip`);
-          
-          status.innerHTML = `✅ <strong>${count} Tampered QR Codes Generated!</strong> — Download complete. These would all be flagged as DUPLICATE during verification!`;
-          status.className = 'status-success';
-          
-          updateConsole(`> ✅ Successfully generated and downloaded ${count} tampered QR codes`, false, true);
-          updateConsole('> SECURITY WARNING: All generated QR codes use tampered encryption and would be rejected', true);
-
-        } catch (e) {
-          console.error('ZIP generation error:', e);
-          status.innerText = '❌ Failed to generate ZIP file. See console for details.';
-          status.className = 'status-warning';
-          updateConsole('> ERROR: Failed to generate ZIP file', true);
-        }
-      });
-
-      resetBtn.addEventListener('click', function() {
-        fakeInput.value = '';
-        countInput.value = '1';
-        qrContainer.style.display = 'none';
-        qrImage.style.display = 'none';
-        status.innerHTML = '&nbsp;';
-        
-        updateConsole('> Demo reset - ready for new input');
-      });
-    });
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `Duplicate_${product}_QRCodes.zip`);
+      status.innerHTML = `✅ ${count} duplicate QR codes generated!<br>These will all be detected as TAMPERED during verification!`;
+    }
   </script>
 </body>
 </html>
