@@ -7,7 +7,7 @@
 
   <!-- AES Encryption -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <!-- QRCode Generator (must load before our code runs) -->
+  <!-- Correct QRCode Generator CDN -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
   <style>
@@ -90,9 +90,7 @@
 
   <footer>© 2025 Secure QR System</footer>
 
-  <!-- Our script placed at end of body so libraries have loaded -->
   <script>
-    // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', function () {
       const AES_KEY = "MY_SECRET_AES_KEY"; // same as other pages
       const fakeInput = document.getElementById('fakeId');
@@ -101,7 +99,7 @@
       const canvas = document.getElementById('qrCanvas');
 
       // Defensive check: ensure QRCode library is available
-      if (typeof QRCode === 'undefined') {
+      if (typeof QRCode === 'undefined' && typeof QRCode === 'undefined') {
         status.innerText = '❌ QRCode library failed to load. Check internet or CDN.';
         genBtn.disabled = true;
         return;
@@ -114,15 +112,11 @@
           return;
         }
 
-        // Use a tampered key to make this QR invalid for verification
         const tamperedKey = AES_KEY + '_tampered';
         const fakeCipher = CryptoJS.AES.encrypt(id, tamperedKey).toString();
 
-        // ensure canvas is visible
         canvas.style.display = 'block';
 
-        // Draw QR to canvas
-        // Use QRCode.toCanvas which is provided by the library
         try {
           QRCode.toCanvas(canvas, fakeCipher, { width: 240, margin: 1 }, function (error) {
             if (error) {
