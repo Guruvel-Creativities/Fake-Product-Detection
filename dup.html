@@ -8,8 +8,8 @@
 
   <!-- AES Encryption -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <!-- QRCode Generator -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <!-- QRCode Generator - Using QRious like generate.html -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <style>
     :root {
@@ -273,6 +273,14 @@
       font-size: 12px;
       margin-left: 10px;
     }
+
+    /* QR Code Image Styling */
+    #qrImage {
+      max-width: 250px;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -302,7 +310,7 @@
       </div>
       
       <div class="qr-display" id="qrContainer">
-        <canvas id="qrCanvas" width="260" height="260"></canvas>
+        <img id="qrImage" style="display: none;">
         <div id="status" class="status-warning">&nbsp;</div>
       </div>
     </div>
@@ -314,7 +322,7 @@
         <ul class="file-list">
           <li>dupl.html</li>
           <li>crypto-js.min.js</li>
-          <li>qrcode.min.js</li>
+          <li>qrious.min.js</li>
         </ul>
       </div>
 
@@ -323,7 +331,7 @@
         <table class="request-table">
           <tr>
             <th>Request URL</th>
-            <td>https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js</td>
+            <td>https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js</td>
           </tr>
           <tr>
             <th>Request Method</th>
@@ -351,8 +359,8 @@
 
       <div class="tech-section">
         <h3>💻 Console Output</h3>
-        <div class="console-output">
-          <div class="console-line">> QR Code library loaded successfully</div>
+        <div class="console-output" id="consoleOutput">
+          <div class="console-line">> QR Code library (QRious) loaded successfully</div>
           <div class="console-line">> CryptoJS library initialized</div>
           <div class="console-line console-warning">> Security: Demo mode active - generating tampered QR codes</div>
           <div class="console-line">> Ready for user input...</div>
@@ -362,7 +370,7 @@
       <div class="tech-section">
         <h3>📊 Affected Resources</h3>
         <div class="resources-list">
-          <strong>Request:</strong> qrcode.min.js<br>
+          <strong>Request:</strong> qrious.min.js<br>
           <strong>Status:</strong> Loaded successfully from CDN
         </div>
         <div style="margin-top: 10px; font-size: 12px; color: var(--gray);">
@@ -383,21 +391,31 @@
       const genBtn = document.getElementById('genBtn');
       const resetBtn = document.getElementById('resetBtn');
       const status = document.getElementById('status');
-      const canvas = document.getElementById('qrCanvas');
+      const qrImage = document.getElementById('qrImage');
       const qrContainer = document.getElementById('qrContainer');
+      const consoleOutput = document.getElementById('consoleOutput');
 
       // Library availability check
-      if (typeof QRCode === 'undefined' || typeof CryptoJS === 'undefined') {
+      if (typeof QRious === 'undefined' || typeof CryptoJS === 'undefined') {
         status.innerText = '❌ Required libraries failed to load. Please check your internet connection.';
         status.className = 'status-warning';
         genBtn.disabled = true;
         return;
       }
 
-      console.log('QR Code library loaded successfully');
-      console.log('CryptoJS library initialized');
-      console.warn('Security: Demo mode active - generating tampered QR codes');
-      console.log('Ready for user input...');
+      // Update console output
+      function updateConsole(message, isWarning = false) {
+        const line = document.createElement('div');
+        line.className = `console-line ${isWarning ? 'console-warning' : ''}`;
+        line.textContent = message;
+        consoleOutput.appendChild(line);
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      }
+
+      updateConsole('> QR Code library (QRious) loaded successfully');
+      updateConsole('> CryptoJS library initialized');
+      updateConsole('> Security: Demo mode active - generating tampered QR codes', true);
+      updateConsole('> Ready for user input...');
 
       genBtn.addEventListener('click', function () {
         const id = fakeInput.value.trim();
@@ -406,46 +424,49 @@
           return;
         }
 
-        // Clear previous QR code
-        const context = canvas.getContext('2d');
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        // Hide previous QR code
+        qrImage.style.display = 'none';
         
-        // Use tampered key to simulate fake QR
+        // Use tampered key to simulate fake QR (same as original logic)
         const tamperedKey = AES_KEY + '_tampered';
         const fakeCipher = CryptoJS.AES.encrypt(id, tamperedKey).toString();
 
         qrContainer.style.display = 'block';
 
         try {
-          QRCode.toCanvas(canvas, fakeCipher, { width: 240, margin: 1 }, function (error) {
-            if (error) {
-              console.error('QR generation error:', error);
-              status.innerText = '❌ Failed to generate QR: ' + (error.message || error);
-              status.className = 'status-warning';
-            } else {
-              status.innerHTML = '⚠️ <strong>Tampered QR Generated</strong> — This would be flagged as <strong>DUPLICATE/INVALID</strong> during verification!';
-              status.className = 'status-warning';
-              console.log(`Generated tampered QR for product ID: ${id}`);
-              console.warn('SECURITY WARNING: This QR code uses tampered encryption and would be rejected by verification systems');
-            }
+          // Generate QR code using QRious (same library as generate.html)
+          const qr = new QRious({
+            element: document.createElement('canvas'),
+            value: fakeCipher,
+            size: 250,
+            level: 'H'
           });
+
+          // Convert to data URL and display
+          qrImage.src = qr.toDataURL();
+          qrImage.style.display = 'block';
+          
+          status.innerHTML = '⚠️ <strong>Tampered QR Generated</strong> — This would be flagged as <strong>DUPLICATE/INVALID</strong> during verification!';
+          status.className = 'status-warning';
+          
+          updateConsole(`> Generated tampered QR for product ID: ${id}`);
+          updateConsole('> SECURITY WARNING: This QR code uses tampered encryption and would be rejected by verification systems', true);
+
         } catch (e) {
           console.error('Unexpected error:', e);
           status.innerText = '❌ Unexpected error. See console for details.';
           status.className = 'status-warning';
+          updateConsole('> ERROR: Failed to generate QR code', true);
         }
       });
 
       resetBtn.addEventListener('click', function() {
         fakeInput.value = '';
         qrContainer.style.display = 'none';
+        qrImage.style.display = 'none';
         status.innerHTML = '&nbsp;';
         
-        // Clear canvas
-        const context = canvas.getContext('2d');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        
-        console.log('Demo reset - ready for new input');
+        updateConsole('> Demo reset - ready for new input');
       });
     });
   </script>
