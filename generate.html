@@ -9,63 +9,119 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #0d47a1;
+      --light-bg: #f0f4f9;
+      --white: #ffffff;
+      --gray: #777;
+      --dark: #333;
+    }
+    
     body {
       font-family: "Segoe UI", sans-serif;
-      background: #f0f4f9;
-      color: #333;
+      background: var(--light-bg);
+      color: var(--dark);
       text-align: center;
-      padding: 40px;
+      padding: 40px 20px;
+      min-height: 100vh;
     }
-    h1 {
-      color: #1a73e8;
+
+    .header {
       margin-bottom: 10px;
     }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      margin-bottom: 30px;
+    }
+
+    .back-btn:hover {
+      background: var(--primary-dark);
+    }
+
     .container {
-      background: #fff;
+      background: var(--white);
       display: inline-block;
-      padding: 25px 35px;
+      padding: 30px 40px;
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      margin-top: 30px;
+      margin-top: 20px;
       width: 90%;
-      max-width: 420px;
+      max-width: 450px;
     }
+
     input {
       width: 100%;
-      padding: 10px;
+      padding: 12px 15px;
       font-size: 16px;
-      margin: 8px 0 15px;
-      border: 1px solid #ccc;
+      margin: 10px 0 20px;
+      border: 2px solid #e1e5e9;
       border-radius: 8px;
+      transition: border-color 0.3s ease;
     }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
     .btn {
       display: inline-block;
-      padding: 12px 22px;
-      background: #1a73e8;
-      color: #fff;
+      padding: 12px 24px;
+      background: var(--primary);
+      color: var(--white);
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.3s ease;
+      width: 100%;
+      margin-top: 10px;
     }
+
     .btn:hover {
-      background: #0d47a1;
+      background: var(--primary-dark);
     }
+
     #status {
       margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
       font-weight: 500;
+      background: #e8f5e8;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
     }
+
     footer {
       margin-top: 40px;
-      color: #777;
+      color: var(--gray);
     }
   </style>
 </head>
 <body>
 
-  <h1>🧾 Generate Secure Product QR Codes</h1>
+  <div class="header">
+    <a href="index.html" class="back-btn">← Back to Home</a>
+    <h1>🧾 Generate Secure Product QR Codes</h1>
+  </div>
+
   <div class="container">
     <input id="productInput" type="text" placeholder="Enter Product ID or Name">
     <input id="countInput" type="number" placeholder="Enter Number of QR Codes" min="1">
@@ -76,7 +132,7 @@
   <footer>© 2025 Secure QR System | AES-Encrypted QR Generator</footer>
 
   <script>
-    const AES_KEY = "MY_SECRET_AES_KEY"; // Must match verify.html
+    const AES_KEY = "MY_SECRET_AES_KEY";
 
     async function generateQRCodes() {
       const product = document.getElementById("productInput").value.trim();
@@ -95,19 +151,16 @@
       const qr = new QRious({ size: 250 });
 
       for (let i = 1; i <= count; i++) {
-        // Unique serial number for each QR
         const serial = `${product}_${i.toString().padStart(3, '0')}`;
         const encrypted = CryptoJS.AES.encrypt(serial, AES_KEY).toString();
 
         qr.value = encrypted;
         const imgData = qr.toDataURL("image/png");
 
-        // Add to zip folder
         const base64Data = imgData.split(',')[1];
         folder.file(`QR_${serial}.png`, base64Data, { base64: true });
       }
 
-      // Generate and download zip
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, `${product}_QRCodes.zip`);
       status.textContent = "✅ " + count + " QR codes generated and downloaded as ZIP!";
