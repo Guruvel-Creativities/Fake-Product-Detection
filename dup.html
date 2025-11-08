@@ -2,104 +2,254 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Fake QR Generator (Duplicate) - Fixed</title>
+  <title>Security Demo: QR Code Tampering Detection</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Educational demo showing how QR code tampering can be detected">
 
   <!-- AES Encryption -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <!-- Correct QRCode Generator CDN -->
+  <!-- QRCode Generator -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
   <style>
+    :root {
+      --primary: #4286f4;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --success: #2ecc71;
+      --dark: #373B44;
+      --light: #ffffff;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #373B44, #4286f4);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--dark), var(--primary));
       color: white;
       text-align: center;
       margin: 0;
-      padding: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .container {
-      max-width: 420px;
-      margin: 80px auto;
-      background: rgba(255, 255, 255, 0.08);
+      max-width: 480px;
+      width: 100%;
+      margin: 20px auto;
+      background: rgba(255, 255, 255, 0.1);
       padding: 28px;
       border-radius: 14px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
     }
 
-    h2 {
-      font-size: 22px;
+    h1 {
+      font-size: 24px;
       margin-bottom: 18px;
-      color: #ffdddd;
+      color: var(--light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .warning-banner {
+      background: rgba(231, 76, 60, 0.2);
+      border-left: 4px solid var(--danger);
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      text-align: left;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .info-box {
+      background: rgba(52, 152, 219, 0.2);
+      border-left: 4px solid #3498db;
+      padding: 12px 15px;
+      margin: 20px 0;
+      text-align: left;
+      border-radius: 0 8px 8px 0;
+      font-size: 14px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      text-align: left;
+      font-weight: 600;
     }
 
     input {
-      width: 92%;
+      width: 100%;
       padding: 12px;
       border-radius: 8px;
-      border: none;
-      margin-bottom: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
       font-size: 16px;
-      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     button {
-      background: #e74c3c;
+      flex: 1;
       border: none;
       color: white;
       font-size: 16px;
-      padding: 10px 20px;
+      font-weight: 600;
+      padding: 12px 20px;
       border-radius: 8px;
       cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.08s ease;
+      transition: all 0.2s ease;
     }
 
-    button:active { transform: translateY(1px); }
+    button:active { 
+      transform: translateY(2px); 
+    }
+
+    #genBtn {
+      background: var(--danger);
+    }
+
+    #genBtn:hover {
+      background: #c0392b;
+    }
+
+    #resetBtn {
+      background: #7f8c8d;
+    }
+
+    #resetBtn:hover {
+      background: #6c7a7d;
+    }
+
+    .qr-container {
+      margin-top: 22px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      display: none;
+    }
 
     canvas {
-      margin-top: 22px;
       background: white;
       border-radius: 8px;
       padding: 8px;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 0 auto;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
     #status {
       margin-top: 18px;
       font-weight: 600;
-      color: #ffdede;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
     }
 
-    footer { margin-top: 36px; color: #eee; font-size: 13px; }
+    footer { 
+      margin-top: 36px; 
+      color: #eee; 
+      font-size: 13px; 
+      text-align: center;
+      max-width: 480px;
+    }
+
+    .status-warning {
+      color: #ffdede;
+      background: rgba(231, 76, 60, 0.2);
+      border-left: 4px solid var(--danger);
+    }
+
+    .status-info {
+      color: #dedeff;
+      background: rgba(52, 152, 219, 0.2);
+      border-left: 4px solid #3498db;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🚫 Generate Duplicate / Fake QR (Fixed)</h2>
-    <input id="fakeId" placeholder="Enter Fake Product ID (e.g. GC01)">
-    <br>
-    <button id="genBtn">Generate Fake QR</button>
-    <br>
-    <canvas id="qrCanvas" width="260" height="260" style="display:none"></canvas>
-    <p id="status">&nbsp;</p>
+    <h1><span>🔒</span> Security Demo: QR Code Tampering Detection</h1>
+    
+    <div class="warning-banner">
+      <strong>Educational Purpose Only:</strong> This demo shows how tampered QR codes can be detected. Do not use for malicious purposes.
+    </div>
+    
+    <div class="input-group">
+      <label for="fakeId">Enter Product ID to demonstrate tampering:</label>
+      <input id="fakeId" placeholder="Enter Product ID (e.g. GC01)">
+    </div>
+    
+    <div class="button-group">
+      <button id="genBtn">Generate Tampered QR</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+    
+    <div class="info-box">
+      <strong>How this works:</strong> This demo uses a tampered encryption key to generate QR codes that would be flagged as duplicates during verification. This demonstrates security measures against counterfeit products.
+    </div>
+    
+    <div class="qr-container" id="qrContainer">
+      <canvas id="qrCanvas" width="260" height="260"></canvas>
+      <p id="status" class="status-warning">&nbsp;</p>
+    </div>
   </div>
 
-  <footer>© 2025 Secure QR System</footer>
+  <footer>
+    <p>© 2025 Secure QR System - Educational Demo</p>
+    <p>This demonstration shows security measures, not encourages misuse.</p>
+  </footer>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const AES_KEY = "MY_SECRET_AES_KEY"; // same as other pages
       const fakeInput = document.getElementById('fakeId');
       const genBtn = document.getElementById('genBtn');
+      const resetBtn = document.getElementById('resetBtn');
       const status = document.getElementById('status');
       const canvas = document.getElementById('qrCanvas');
+      const qrContainer = document.getElementById('qrContainer');
 
       // Defensive check: ensure QRCode library is available
-      if (typeof QRCode === 'undefined' && typeof QRCode === 'undefined') {
+      if (typeof QRCode === 'undefined') {
         status.innerText = '❌ QRCode library failed to load. Check internet or CDN.';
         genBtn.disabled = true;
         return;
@@ -108,28 +258,46 @@
       genBtn.addEventListener('click', function () {
         const id = fakeInput.value.trim();
         if (!id) {
-          alert('⚠️ Please enter a Fake Product ID');
+          alert('⚠️ Please enter a Product ID');
           return;
         }
 
+        // Clear previous QR code
+        const context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Use tampered key to simulate fake QR
         const tamperedKey = AES_KEY + '_tampered';
         const fakeCipher = CryptoJS.AES.encrypt(id, tamperedKey).toString();
 
-        canvas.style.display = 'block';
+        qrContainer.style.display = 'block';
 
         try {
           QRCode.toCanvas(canvas, fakeCipher, { width: 240, margin: 1 }, function (error) {
             if (error) {
               console.error('QR generation error:', error);
               status.innerText = '❌ Failed to generate QR: ' + (error && error.message ? error.message : error);
+              status.className = 'status-warning';
             } else {
-              status.innerHTML = '⚠️ Fake QR Generated — This will show as <strong>DUPLICATE</strong> during verification!';
+              status.innerHTML = '⚠️ <strong>Tampered QR Generated</strong> — This would be flagged as <strong>DUPLICATE/INVALID</strong> during verification!';
+              status.className = 'status-warning';
             }
           });
         } catch (e) {
           console.error(e);
           status.innerText = '❌ Unexpected error. See console for details.';
+          status.className = 'status-warning';
         }
+      });
+
+      resetBtn.addEventListener('click', function() {
+        fakeInput.value = '';
+        qrContainer.style.display = 'none';
+        status.innerHTML = '&nbsp;';
+        
+        // Clear canvas
+        const context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
       });
     });
   </script>
