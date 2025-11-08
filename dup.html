@@ -2,216 +2,137 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Create Duplicate QR | Secure QR System</title>
+  <title>Security Testing | Secure QR System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <style>
-    :root {
-      --primary: #1a73e8;
-      --primary-dark: #0d47a1;
-      --danger: #ff4444;
-      --light-bg: #f0f4f9;
-      --white: #ffffff;
-      --gray: #777;
-      --dark: #333;
-    }
-    
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: var(--light-bg);
-      color: var(--dark);
-      text-align: center;
-      padding: 40px 20px;
-      min-height: 100vh;
-    }
-
-    .header {
-      margin-bottom: 10px;
-    }
-
-    h1 {
-      color: var(--primary);
-      margin-bottom: 10px;
-    }
-
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: var(--primary);
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: background 0.3s ease;
-      margin-bottom: 30px;
-    }
-
-    .back-btn:hover {
-      background: var(--primary-dark);
-    }
-
-    .warning-banner {
-      background: #ffebee;
-      border: 2px solid var(--danger);
-      padding: 15px;
-      border-radius: 8px;
-      margin: 20px auto;
-      max-width: 500px;
-      color: var(--danger);
-      font-weight: 500;
-    }
-
-    .container {
-      background: var(--white);
-      display: inline-block;
-      padding: 30px 40px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      margin-top: 20px;
-      width: 90%;
-      max-width: 450px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px 15px;
-      font-size: 16px;
-      margin: 10px 0 20px;
-      border: 2px solid #e1e5e9;
-      border-radius: 8px;
-      transition: border-color 0.3s ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      width: 100%;
-      margin: 5px 0;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-    }
-
-    .btn-danger:hover {
-      background: #cc0000;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    #status {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 8px;
-      font-weight: 500;
-      background: #ffebee;
-      color: var(--danger);
-      border: 1px solid #ffcdd2;
-    }
-
-    footer {
-      margin-top: 40px;
-      color: var(--gray);
-    }
-  </style>
 </head>
 <body>
 
   <div class="header">
     <a href="index.html" class="back-btn">← Back to Home</a>
-    <h1>🚫 Create Duplicate QR Codes</h1>
+    <h1>🚫 Security Testing</h1>
+    <p class="subtitle">Test your verification system with simulated QR codes</p>
   </div>
 
   <div class="warning-banner">
-    ⚠️ Educational Purpose Only: For testing duplicate detection systems
+    ⚠️ EDUCATIONAL USE ONLY - For security testing and system validation
   </div>
 
   <div class="container">
-    <input id="productInput" type="text" placeholder="Enter Product ID or Name">
-    <input id="countInput" type="number" placeholder="Enter Number of QR Codes" min="1" value="1">
+    <div class="input-group">
+      <label for="productInput">Product ID</label>
+      <input id="productInput" type="text" placeholder="Enter Product ID (e.g. GC01)">
+    </div>
+
+    <div class="input-group">
+      <label for="countInput">Number of Test Codes</label>
+      <input id="countInput" type="number" placeholder="Enter quantity" min="1" value="5">
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-warning" onclick="generateSingleTestQR()">
+        🧪 Single Test QR
+      </button>
+      <button class="btn btn-danger" onclick="generateTestZIP()">
+        📦 Bulk Test ZIP
+      </button>
+    </div>
+
+    <div class="qr-preview" id="qrPreview">
+      <img id="qrImage">
+      <p style="margin-top: 15px; color: var(--text-light); font-size: 0.9rem;">
+        This QR will be detected as TAMPERED during verification
+      </p>
+    </div>
     
-    <button class="btn btn-primary" onclick="generateDuplicateZIP()">Generate ZIP with Multiple Duplicates</button>
-    
-    <p id="status"></p>
+    <div id="status" class="status"></div>
   </div>
 
-  <footer>© 2025 Secure QR System | Security Testing Tool</footer>
+  <footer>© 2025 Secure QR System | Security Testing Environment</footer>
 
   <script>
     const AES_KEY = "MY_SECRET_AES_KEY";
 
-    function generateDuplicateQR() {
+    function generateSingleTestQR() {
       const product = document.getElementById("productInput").value.trim();
       const status = document.getElementById("status");
+      const qrPreview = document.getElementById("qrPreview");
+      const qrImage = document.getElementById("qrImage");
 
       if (!product) {
-        alert("Please enter a product name.");
+        alert("Please enter a product ID for testing.");
         return;
       }
 
-      // Use tampered key to create invalid QR
+      // Use tampered key to create test QR
       const tamperedKey = AES_KEY + '_tampered';
       const fakeCipher = CryptoJS.AES.encrypt(product, tamperedKey).toString();
       
-      status.innerHTML = `⚠️ Duplicate QR code generated for: <strong>${product}</strong><br>This will be detected as INVALID during verification!`;
+      // Generate QR code preview
+      const qr = new QRious({ 
+        value: fakeCipher,
+        size: 250,
+        background: '#fef3c7',
+        foreground: '#92400e'
+      });
+      
+      qrImage.src = qr.toDataURL();
+      qrPreview.style.display = 'block';
+      
+      status.innerHTML = "⚠️ <strong>Test QR Code Generated</strong><br>This simulated QR code will be flagged as INVALID during verification.";
+      status.className = "status status-warning";
     }
 
-    async function generateDuplicateZIP() {
+    async function generateTestZIP() {
       const product = document.getElementById("productInput").value.trim();
       const count = parseInt(document.getElementById("countInput").value);
       const status = document.getElementById("status");
+      const qrPreview = document.getElementById("qrPreview");
 
       if (!product || !count || count <= 0) {
-        alert("Please enter valid product name and number of QR codes.");
+        alert("Please enter valid product ID and quantity.");
         return;
       }
 
-      status.textContent = "Generating " + count + " duplicate QR codes... Please wait ⏳";
+      status.textContent = "🔄 Generating " + count + " test QR codes...";
+      status.className = "status status-warning";
+      qrPreview.style.display = 'none';
 
-      const zip = new JSZip();
-      const folder = zip.folder("Duplicate_QR_Codes");
-      const tamperedKey = AES_KEY + '_tampered';
+      try {
+        const zip = new JSZip();
+        const folder = zip.folder("Security_Test_Codes");
+        const tamperedKey = AES_KEY + '_tampered';
 
-      for (let i = 1; i <= count; i++) {
-        const serial = `${product}_${i.toString().padStart(3, '0')}`;
-        const fakeCipher = CryptoJS.AES.encrypt(serial, tamperedKey).toString();
+        for (let i = 1; i <= count; i++) {
+          const serial = `${product}_${i.toString().padStart(3, '0')}`;
+          const fakeCipher = CryptoJS.AES.encrypt(serial, tamperedKey).toString();
 
-        const qr = new QRious({ 
-          value: fakeCipher,
-          size: 250 
-        });
+          const qr = new QRious({ 
+            value: fakeCipher,
+            size: 250,
+            background: '#fef3c7',
+            foreground: '#92400e'
+          });
 
-        const imgData = qr.toDataURL("image/png");
-        const base64Data = imgData.split(',')[1];
-        folder.file(`Duplicate_${serial}.png`, base64Data, { base64: true });
+          const imgData = qr.toDataURL("image/png");
+          const base64Data = imgData.split(',')[1];
+          folder.file(`Test_${serial}.png`, base64Data, { base64: true });
+        }
+
+        const content = await zip.generateAsync({ type: "blob" });
+        saveAs(content, `Security_Test_${product}_QRCodes.zip`);
+        
+        status.innerHTML = "✅ <strong>" + count + " test QR codes generated!</strong><br>All codes will be detected as TAMPERED during verification.";
+        status.className = "status status-success";
+        
+      } catch (error) {
+        status.textContent = "❌ Error generating test codes. Please try again.";
+        status.className = "status status-danger";
       }
-
-      const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `Duplicate_${product}_QRCodes.zip`);
-      status.innerHTML = `✅ ${count} duplicate QR codes generated!<br>These will all be detected as TAMPERED during verification!`;
     }
   </script>
 </body>
