@@ -4,136 +4,32 @@
   <meta charset="UTF-8">
   <title>Verify Product | Secure QR System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
-  <style>
-    :root {
-      --primary: #1a73e8;
-      --primary-dark: #0d47a1;
-      --success: #00c851;
-      --danger: #ff4444;
-      --light-bg: #f0f4f9;
-      --white: #ffffff;
-      --gray: #777;
-      --dark: #333;
-    }
-    
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: var(--light-bg);
-      color: var(--dark);
-      text-align: center;
-      padding: 40px 20px;
-      min-height: 100vh;
-    }
-
-    .header {
-      margin-bottom: 10px;
-    }
-
-    h1 {
-      color: var(--primary);
-      margin-bottom: 10px;
-    }
-
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: var(--primary);
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: background 0.3s ease;
-      margin-bottom: 30px;
-    }
-
-    .back-btn:hover {
-      background: var(--primary-dark);
-    }
-
-    #reader {
-      width: 300px;
-      margin: 20px auto;
-      display: none;
-      border: 2px solid var(--primary);
-      border-radius: 10px;
-    }
-
-    #resultBox {
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 500;
-      display: inline-block;
-      min-width: 300px;
-      border: 2px solid transparent;
-    }
-
-    .valid {
-      background: #e8f5e8;
-      color: var(--success);
-      border-color: var(--success);
-    }
-
-    .invalid {
-      background: #ffebee;
-      color: var(--danger);
-      border-color: var(--danger);
-    }
-
-    .waiting {
-      background: #fff3e0;
-      color: #ff9800;
-      border-color: #ff9800;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      margin-top: 25px;
-    }
-
-    .btn:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    footer {
-      margin-top: 50px;
-      color: var(--gray);
-    }
-  </style>
 </head>
 <body>
 
   <div class="header">
     <a href="index.html" class="back-btn">← Back to Home</a>
     <h1>🔍 Verify Product Authenticity</h1>
+    <p class="subtitle">Scan QR codes to verify genuine products and detect counterfeits</p>
   </div>
 
-  <p>Click below to start scanning the product QR code.</p>
+  <div class="container" style="text-align: center;">
+    <p style="margin-bottom: 25px; color: var(--text-light);">
+      Click the button below to start scanning product QR codes with your camera.
+    </p>
 
-  <button id="scanBtn" class="btn">📷 Scan QR Code</button>
-  <div id="reader"></div>
-  <div id="resultBox" class="waiting">Waiting for scan...</div>
+    <button id="scanBtn" class="btn btn-success" style="font-size: 1.1rem;">
+      📷 Start Camera Scanner
+    </button>
+    
+    <div id="reader"></div>
+    <div id="resultBox" class="waiting">Waiting for QR code scan...</div>
+  </div>
 
-  <footer>© 2025 Secure QR System</footer>
+  <footer>© 2025 Secure QR System | Real-time Product Verification</footer>
 
   <script>
     const AES_KEY = "MY_SECRET_AES_KEY";
@@ -156,7 +52,7 @@
 
       reader.style.display = "block";
       btn.disabled = true;
-      btn.textContent = "Scanning...";
+      btn.innerHTML = "🔄 Scanning...";
 
       html5QrCode = new Html5Qrcode("reader");
       try {
@@ -170,38 +66,39 @@
 
         const cameraId = backCamera ? backCamera.id : cameras[0].id;
 
-        html5QrCode.start(
+        await html5QrCode.start(
           cameraId,
           { fps: 10, qrbox: { width: 250, height: 250 } },
           (decodedText) => {
             const decrypted = decryptQRCode(decodedText);
             if (decrypted) {
-              resultBox.textContent = "✅ Original Product: " + decrypted;
+              resultBox.textContent = "✅ GENUINE PRODUCT: " + decrypted;
               resultBox.className = "valid";
             } else {
-              resultBox.textContent = "❌ Duplicate / Tampered Product!";
+              resultBox.textContent = "❌ COUNTERFEIT / TAMPERED PRODUCT!";
               resultBox.className = "invalid";
             }
             stopScanning();
+          },
+          (error) => {
+            // Scanning errors handled silently
           }
         );
       } catch (err) {
         alert("Camera access failed: " + err.message);
-        btn.disabled = false;
-        btn.textContent = "📷 Scan QR Code";
+        stopScanning();
       }
     }
 
     async function stopScanning() {
       const reader = document.getElementById("reader");
       const btn = document.getElementById("scanBtn");
-      if (html5QrCode) {
+      if (html5QrCode && html5QrCode.isRunning()) {
         await html5QrCode.stop();
-        html5QrCode.clear();
       }
       reader.style.display = "none";
       btn.disabled = false;
-      btn.textContent = "📷 Scan Again";
+      btn.innerHTML = "📷 Scan Again";
     }
 
     document.getElementById("scanBtn").addEventListener("click", startScanning);
