@@ -4,136 +4,37 @@
   <meta charset="UTF-8">
   <title>Secure QR Product System | Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root {
-      --primary: #1a73e8;
-      --primary-dark: #0d47a1;
-      --light-bg: #f0f4f9;
-      --white: #ffffff;
-      --gray: #777;
-      --dark: #333;
-    }
-    
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: var(--light-bg);
-      color: var(--dark);
-      text-align: center;
-      padding: 40px 20px;
-      min-height: 100vh;
-    }
-
-    h1 {
-      color: var(--primary);
-      font-size: 2.2rem;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      color: #444;
-      margin-bottom: 40px;
-      font-weight: normal;
-    }
-
-    .card-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 25px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: var(--white);
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      width: 280px;
-      padding: 30px 25px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-    }
-
-    .card h3 {
-      color: var(--primary);
-      margin-bottom: 15px;
-      font-size: 1.3rem;
-    }
-
-    .card p {
-      color: #555;
-      margin-bottom: 25px;
-      line-height: 1.5;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      background: var(--primary);
-      color: var(--white);
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      transition: background 0.3s ease;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      background: var(--primary-dark);
-    }
-
-    footer {
-      margin-top: 50px;
-      color: var(--gray);
-      font-size: 14px;
-    }
-
-    @media (max-width: 768px) {
-      .card-container {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .card {
-        width: 100%;
-        max-width: 400px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <h1>🔐 Product Authenticity Dashboard</h1>
-  <p class="subtitle">Identify, Generate & Verify Genuine Products via Secure AES QR</p>
+  <div class="header">
+    <h1>🔐 Product Authenticity Dashboard</h1>
+    <p class="subtitle">Identify, Generate & Verify Genuine Products via Secure AES QR</p>
+  </div>
 
   <div class="card-container">
     <div class="card">
       <h3>🧾 Generate QR Code</h3>
-      <p>Create encrypted QR codes for genuine products with secure AES encryption.</p>
-      <a href="generate.html" class="btn">Generate QR</a>
+      <p>Create encrypted QR codes for genuine products with secure AES encryption and bulk download capabilities.</p>
+      <a href="generate.html" class="btn btn-primary">Generate QR Codes</a>
     </div>
 
     <div class="card">
       <h3>🔍 Verify Product</h3>
-      <p>Scan product QR codes using your camera to check authenticity and detect duplicates.</p>
-      <a href="verify.html" class="btn">Verify Product</a>
+      <p>Scan product QR codes using your camera to check authenticity and detect duplicates in real-time.</p>
+      <a href="verify.html" class="btn btn-success">Verify Product</a>
     </div>
 
     <div class="card">
-      <h3>🚫 Create Duplicate QR</h3>
-      <p>Simulate fake QR codes for testing and security demonstration purposes.</p>
-      <a href="dup.html" class="btn">Create Duplicate</a>
+      <h3>🚫 Security Testing</h3>
+      <p>Simulate fake QR codes for security testing and educational demonstration purposes.</p>
+      <a href="dup.html" class="btn btn-warning">Test Security</a>
     </div>
   </div>
 
   <footer>
-    © 2025 Secure QR Product System | AES-Encrypted Authentication
+    © 2025 Secure QR Product System | AES-Encrypted Authentication Technology
   </footer>
 
 </body>
