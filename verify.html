@@ -7,48 +7,95 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
   <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #0d47a1;
+      --success: #00c851;
+      --danger: #ff4444;
+      --light-bg: #f0f4f9;
+      --white: #ffffff;
+      --gray: #777;
+      --dark: #333;
+    }
+    
     body {
       font-family: "Segoe UI", sans-serif;
-      background: #f0f4f9;
-      color: #333;
+      background: var(--light-bg);
+      color: var(--dark);
       text-align: center;
-      padding: 40px;
+      padding: 40px 20px;
+      min-height: 100vh;
     }
-    h1 {
-      color: #1a73e8;
+
+    .header {
       margin-bottom: 10px;
     }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      margin-bottom: 30px;
+    }
+
+    .back-btn:hover {
+      background: var(--primary-dark);
+    }
+
     #reader {
       width: 300px;
       margin: 20px auto;
       display: none;
-      border: 2px solid #1a73e8;
+      border: 2px solid var(--primary);
       border-radius: 10px;
     }
+
     #resultBox {
       margin-top: 20px;
-      padding: 15px;
-      border-radius: 8px;
+      padding: 20px;
+      border-radius: 10px;
       font-size: 18px;
       font-weight: 500;
       display: inline-block;
-      min-width: 250px;
+      min-width: 300px;
+      border: 2px solid transparent;
     }
+
     .valid {
-      background: #e6ffe6;
-      color: #007e33;
-      border: 2px solid #00c851;
+      background: #e8f5e8;
+      color: var(--success);
+      border-color: var(--success);
     }
+
     .invalid {
-      background: #ffe6e6;
-      color: #c00;
-      border: 2px solid #ff4444;
+      background: #ffebee;
+      color: var(--danger);
+      border-color: var(--danger);
     }
+
+    .waiting {
+      background: #fff3e0;
+      color: #ff9800;
+      border-color: #ff9800;
+    }
+
     .btn {
       display: inline-block;
-      padding: 12px 22px;
-      background: #1a73e8;
-      color: #fff;
+      padding: 12px 24px;
+      background: var(--primary);
+      color: var(--white);
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -57,27 +104,39 @@
       transition: background 0.3s ease;
       margin-top: 25px;
     }
+
     .btn:hover {
-      background: #0d47a1;
+      background: var(--primary-dark);
     }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
     footer {
       margin-top: 50px;
-      color: #777;
+      color: var(--gray);
     }
   </style>
 </head>
 <body>
-  <h1>🔍 Verify Product Authenticity</h1>
+
+  <div class="header">
+    <a href="index.html" class="back-btn">← Back to Home</a>
+    <h1>🔍 Verify Product Authenticity</h1>
+  </div>
+
   <p>Click below to start scanning the product QR code.</p>
 
   <button id="scanBtn" class="btn">📷 Scan QR Code</button>
   <div id="reader"></div>
-  <div id="resultBox">Waiting for scan...</div>
+  <div id="resultBox" class="waiting">Waiting for scan...</div>
 
   <footer>© 2025 Secure QR System</footer>
 
   <script>
-    const AES_KEY = "MY_SECRET_AES_KEY"; // Same as generate.html
+    const AES_KEY = "MY_SECRET_AES_KEY";
     let html5QrCode;
 
     function decryptQRCode(cipherText) {
@@ -104,7 +163,6 @@
         const cameras = await Html5Qrcode.getCameras();
         if (!cameras.length) throw new Error("No camera found");
 
-        // Try to pick the back/rear camera
         let backCamera = cameras.find(c =>
           c.label.toLowerCase().includes("back") ||
           c.label.toLowerCase().includes("rear")
