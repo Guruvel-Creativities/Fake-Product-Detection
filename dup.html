@@ -10,6 +10,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <!-- QRCode Generator - Using QRious like generate.html -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <!-- ZIP Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
     :root {
@@ -35,6 +38,29 @@
       line-height: 1.6;
       min-height: 100vh;
       padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .back-btn:hover {
+      background: #0d47a1;
     }
 
     .app-container {
@@ -84,12 +110,12 @@
     }
 
     .input-section {
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     .input-section label {
       display: block;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-weight: 600;
       color: var(--dark);
     }
@@ -129,13 +155,22 @@
       transform: translateY(2px);
     }
 
-    #genBtn {
+    #genSingleBtn {
       background: var(--danger);
       color: white;
     }
 
-    #genBtn:hover {
+    #genSingleBtn:hover {
       background: #c0392b;
+    }
+
+    #genZipBtn {
+      background: var(--warning);
+      color: white;
+    }
+
+    #genZipBtn:hover {
+      background: #e67e22;
     }
 
     #resetBtn {
@@ -176,6 +211,12 @@
       background: rgba(231, 76, 60, 0.1);
       color: var(--danger);
       border: 1px solid rgba(231, 76, 60, 0.3);
+    }
+
+    .status-success {
+      background: rgba(46, 204, 113, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(46, 204, 113, 0.3);
     }
 
     /* Right Panel - Technical Details */
@@ -239,6 +280,8 @@
       font-family: 'Courier New', monospace;
       font-size: 14px;
       margin-top: 10px;
+      max-height: 200px;
+      overflow-y: auto;
     }
 
     .console-line {
@@ -247,6 +290,10 @@
 
     .console-warning {
       color: #f39c12;
+    }
+
+    .console-success {
+      color: #2ecc71;
     }
 
     .resources-list {
@@ -284,6 +331,12 @@
   </style>
 </head>
 <body>
+  <div class="header">
+    <a href="index.html" class="back-btn">
+      ← Back to Home
+    </a>
+  </div>
+
   <div class="app-container">
     <!-- Left Panel - Demo Interface -->
     <div class="demo-panel">
@@ -299,9 +352,18 @@
         <label for="fakeId">Enter Product ID to demonstrate tampering:</label>
         <input id="fakeId" type="text" placeholder="Enter Product ID (e.g. GC01)">
       </div>
+
+      <div class="input-section">
+        <label for="countInput">Number of QR Codes to Generate:</label>
+        <input id="countInput" type="number" placeholder="Enter number (e.g., 5)" min="1" value="1">
+      </div>
       
       <div class="button-group">
-        <button id="genBtn">Generate Tampered QR</button>
+        <button id="genSingleBtn">Show QR Here</button>
+        <button id="genZipBtn">Generate ZIP with Multiple QRs</button>
+      </div>
+
+      <div class="button-group">
         <button id="resetBtn">Reset</button>
       </div>
       
@@ -323,6 +385,8 @@
           <li>dupl.html</li>
           <li>crypto-js.min.js</li>
           <li>qrious.min.js</li>
+          <li>jszip.min.js</li>
+          <li>FileSaver.min.js</li>
         </ul>
       </div>
 
@@ -362,6 +426,7 @@
         <div class="console-output" id="consoleOutput">
           <div class="console-line">> QR Code library (QRious) loaded successfully</div>
           <div class="console-line">> CryptoJS library initialized</div>
+          <div class="console-line">> ZIP libraries loaded</div>
           <div class="console-line console-warning">> Security: Demo mode active - generating tampered QR codes</div>
           <div class="console-line">> Ready for user input...</div>
         </div>
@@ -388,7 +453,9 @@
     document.addEventListener('DOMContentLoaded', function () {
       const AES_KEY = "MY_SECRET_AES_KEY";
       const fakeInput = document.getElementById('fakeId');
-      const genBtn = document.getElementById('genBtn');
+      const countInput = document.getElementById('countInput');
+      const genSingleBtn = document.getElementById('genSingleBtn');
+      const genZipBtn = document.getElementById('genZipBtn');
       const resetBtn = document.getElementById('resetBtn');
       const status = document.getElementById('status');
       const qrImage = document.getElementById('qrImage');
@@ -396,17 +463,21 @@
       const consoleOutput = document.getElementById('consoleOutput');
 
       // Library availability check
-      if (typeof QRious === 'undefined' || typeof CryptoJS === 'undefined') {
+      if (typeof QRious === 'undefined' || typeof CryptoJS === 'undefined' || typeof JSZip === 'undefined') {
         status.innerText = '❌ Required libraries failed to load. Please check your internet connection.';
         status.className = 'status-warning';
-        genBtn.disabled = true;
+        genSingleBtn.disabled = true;
+        genZipBtn.disabled = true;
         return;
       }
 
       // Update console output
-      function updateConsole(message, isWarning = false) {
+      function updateConsole(message, isWarning = false, isSuccess = false) {
         const line = document.createElement('div');
-        line.className = `console-line ${isWarning ? 'console-warning' : ''}`;
+        let className = 'console-line';
+        if (isWarning) className += ' console-warning';
+        if (isSuccess) className += ' console-success';
+        line.className = className;
         line.textContent = message;
         consoleOutput.appendChild(line);
         consoleOutput.scrollTop = consoleOutput.scrollHeight;
@@ -414,11 +485,15 @@
 
       updateConsole('> QR Code library (QRious) loaded successfully');
       updateConsole('> CryptoJS library initialized');
+      updateConsole('> ZIP libraries loaded');
       updateConsole('> Security: Demo mode active - generating tampered QR codes', true);
       updateConsole('> Ready for user input...');
 
-      genBtn.addEventListener('click', function () {
+      // Generate single QR code
+      genSingleBtn.addEventListener('click', function () {
         const id = fakeInput.value.trim();
+        const count = parseInt(countInput.value) || 1;
+
         if (!id) {
           alert('⚠️ Please enter a Product ID');
           return;
@@ -427,14 +502,14 @@
         // Hide previous QR code
         qrImage.style.display = 'none';
         
-        // Use tampered key to simulate fake QR (same as original logic)
+        // Use tampered key to simulate fake QR
         const tamperedKey = AES_KEY + '_tampered';
         const fakeCipher = CryptoJS.AES.encrypt(id, tamperedKey).toString();
 
         qrContainer.style.display = 'block';
 
         try {
-          // Generate QR code using QRious (same library as generate.html)
+          // Generate QR code using QRious
           const qr = new QRious({
             element: document.createElement('canvas'),
             value: fakeCipher,
@@ -446,10 +521,10 @@
           qrImage.src = qr.toDataURL();
           qrImage.style.display = 'block';
           
-          status.innerHTML = '⚠️ <strong>Tampered QR Generated</strong> — This would be flagged as <strong>DUPLICATE/INVALID</strong> during verification!';
+          status.innerHTML = `⚠️ <strong>Tampered QR Generated</strong> — This would be flagged as <strong>DUPLICATE/INVALID</strong> during verification!`;
           status.className = 'status-warning';
           
-          updateConsole(`> Generated tampered QR for product ID: ${id}`);
+          updateConsole(`> Generated single tampered QR for product ID: ${id}`);
           updateConsole('> SECURITY WARNING: This QR code uses tampered encryption and would be rejected by verification systems', true);
 
         } catch (e) {
@@ -460,8 +535,75 @@
         }
       });
 
+      // Generate multiple QR codes in ZIP
+      genZipBtn.addEventListener('click', async function () {
+        const id = fakeInput.value.trim();
+        const count = parseInt(countInput.value) || 1;
+
+        if (!id) {
+          alert('⚠️ Please enter a Product ID');
+          return;
+        }
+
+        if (count < 1) {
+          alert('⚠️ Please enter a valid number of QR codes');
+          return;
+        }
+
+        status.innerHTML = `⏳ Generating ${count} tampered QR codes... Please wait`;
+        status.className = 'status-warning';
+        qrContainer.style.display = 'block';
+        qrImage.style.display = 'none';
+
+        try {
+          const zip = new JSZip();
+          const folder = zip.folder("Tampered_QR_Codes");
+          const tamperedKey = AES_KEY + '_tampered';
+
+          updateConsole(`> Starting generation of ${count} tampered QR codes for: ${id}`);
+
+          for (let i = 1; i <= count; i++) {
+            // Create unique serial for each QR
+            const serial = `${id}_${i.toString().padStart(3, '0')}`;
+            const fakeCipher = CryptoJS.AES.encrypt(serial, tamperedKey).toString();
+
+            // Generate QR code
+            const qr = new QRious({
+              element: document.createElement('canvas'),
+              value: fakeCipher,
+              size: 250,
+              level: 'H'
+            });
+
+            // Convert to base64 and add to zip
+            const imgData = qr.toDataURL();
+            const base64Data = imgData.split(',')[1];
+            folder.file(`Tampered_${serial}.png`, base64Data, { base64: true });
+
+            updateConsole(`> Generated QR ${i}/${count}: ${serial}`);
+          }
+
+          // Generate and download zip
+          const content = await zip.generateAsync({ type: "blob" });
+          saveAs(content, `Tampered_${id}_QRCodes.zip`);
+          
+          status.innerHTML = `✅ <strong>${count} Tampered QR Codes Generated!</strong> — Download complete. These would all be flagged as DUPLICATE during verification!`;
+          status.className = 'status-success';
+          
+          updateConsole(`> ✅ Successfully generated and downloaded ${count} tampered QR codes`, false, true);
+          updateConsole('> SECURITY WARNING: All generated QR codes use tampered encryption and would be rejected', true);
+
+        } catch (e) {
+          console.error('ZIP generation error:', e);
+          status.innerText = '❌ Failed to generate ZIP file. See console for details.';
+          status.className = 'status-warning';
+          updateConsole('> ERROR: Failed to generate ZIP file', true);
+        }
+      });
+
       resetBtn.addEventListener('click', function() {
         fakeInput.value = '';
+        countInput.value = '1';
         qrContainer.style.display = 'none';
         qrImage.style.display = 'none';
         status.innerHTML = '&nbsp;';
