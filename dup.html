@@ -19,122 +19,119 @@
       --success: #2ecc71;
       --dark: #373B44;
       --light: #ffffff;
+      --gray: #7f8c8d;
     }
     
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: linear-gradient(135deg, var(--dark), var(--primary));
-      color: white;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
+      color: #333;
+      line-height: 1.6;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      padding: 20px;
     }
 
-    .container {
-      max-width: 480px;
-      width: 100%;
-      margin: 20px auto;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 28px;
-      border-radius: 14px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(10px);
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
     }
 
-    h1 {
-      font-size: 24px;
-      margin-bottom: 18px;
-      color: var(--light);
+    @media (max-width: 768px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Panel - Demo Interface */
+    .demo-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .demo-header h1 {
+      color: var(--dark);
+      font-size: 28px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .warning-banner {
-      background: rgba(231, 76, 60, 0.2);
+      background: rgba(231, 76, 60, 0.1);
+      border: 1px solid var(--danger);
       border-left: 4px solid var(--danger);
-      padding: 12px 15px;
-      margin-bottom: 20px;
-      text-align: left;
+      padding: 15px;
+      margin-bottom: 25px;
       border-radius: 0 8px 8px 0;
     }
 
-    .info-box {
-      background: rgba(52, 152, 219, 0.2);
-      border-left: 4px solid #3498db;
-      padding: 12px 15px;
-      margin: 20px 0;
-      text-align: left;
-      border-radius: 0 8px 8px 0;
-      font-size: 14px;
+    .input-section {
+      margin-bottom: 25px;
     }
 
-    .input-group {
-      margin-bottom: 20px;
-    }
-
-    label {
+    .input-section label {
       display: block;
-      margin-bottom: 8px;
-      text-align: left;
+      margin-bottom: 10px;
       font-weight: 600;
+      color: var(--dark);
     }
 
-    input {
+    .input-section input {
       width: 100%;
-      padding: 12px;
+      padding: 12px 15px;
+      border: 2px solid #e1e5e9;
       border-radius: 8px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
       font-size: 16px;
-      transition: all 0.3s ease;
+      transition: border-color 0.3s ease;
     }
 
-    input:focus {
+    .input-section input:focus {
       outline: none;
       border-color: var(--primary);
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
     }
 
     .button-group {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 25px;
     }
 
     button {
       flex: 1;
+      padding: 12px 20px;
       border: none;
-      color: white;
+      border-radius: 8px;
       font-size: 16px;
       font-weight: 600;
-      padding: 12px 20px;
-      border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
-    button:active { 
-      transform: translateY(2px); 
+    button:active {
+      transform: translateY(2px);
     }
 
     #genBtn {
       background: var(--danger);
+      color: white;
     }
 
     #genBtn:hover {
@@ -142,105 +139,246 @@
     }
 
     #resetBtn {
-      background: #7f8c8d;
+      background: var(--gray);
+      color: white;
     }
 
     #resetBtn:hover {
       background: #6c7a7d;
     }
 
-    .qr-container {
-      margin-top: 22px;
+    .info-box {
+      background: rgba(52, 152, 219, 0.1);
+      border: 1px solid #3498db;
+      border-left: 4px solid #3498db;
       padding: 15px;
-      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 25px;
+    }
+
+    .qr-display {
+      text-align: center;
+      padding: 20px;
+      border: 2px dashed #e1e5e9;
       border-radius: 8px;
+      margin-top: 20px;
       display: none;
     }
 
-    canvas {
-      background: white;
-      border-radius: 8px;
-      padding: 8px;
-      display: block;
-      margin: 0 auto;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-
     #status {
-      margin-top: 18px;
-      font-weight: 600;
+      margin-top: 15px;
       padding: 12px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    footer { 
-      margin-top: 36px; 
-      color: #eee; 
-      font-size: 13px; 
-      text-align: center;
-      max-width: 480px;
+      border-radius: 6px;
+      font-weight: 600;
     }
 
     .status-warning {
-      color: #ffdede;
-      background: rgba(231, 76, 60, 0.2);
-      border-left: 4px solid var(--danger);
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(231, 76, 60, 0.3);
     }
 
-    .status-info {
-      color: #dedeff;
-      background: rgba(52, 152, 219, 0.2);
-      border-left: 4px solid #3498db;
+    /* Right Panel - Technical Details */
+    .tech-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
     }
 
-    @media (max-width: 500px) {
-      .container {
-        padding: 20px;
-      }
-      
-      .button-group {
-        flex-direction: column;
-      }
+    .tech-section {
+      margin-bottom: 30px;
+    }
+
+    .tech-section h3 {
+      color: var(--dark);
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e1e5e9;
+    }
+
+    .file-list {
+      list-style: none;
+    }
+
+    .file-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f2f6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-list li::before {
+      content: "📄";
+    }
+
+    .request-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .request-table th,
+    .request-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #f1f2f6;
+    }
+
+    .request-table th {
+      background: #f8f9fa;
+      font-weight: 600;
+    }
+
+    .console-output {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .console-line {
+      margin-bottom: 5px;
+    }
+
+    .console-warning {
+      color: #f39c12;
+    }
+
+    .resources-list {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid var(--warning);
+    }
+
+    footer {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin-top: 30px;
+      color: white;
+      font-size: 14px;
+    }
+
+    .security-badge {
+      display: inline-block;
+      background: var(--success);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1><span>🔒</span> Security Demo: QR Code Tampering Detection</h1>
-    
-    <div class="warning-banner">
-      <strong>Educational Purpose Only:</strong> This demo shows how tampered QR codes can be detected. Do not use for malicious purposes.
+  <div class="app-container">
+    <!-- Left Panel - Demo Interface -->
+    <div class="demo-panel">
+      <div class="demo-header">
+        <h1><span>🔒</span> Security Demo: QR Code Tampering Detection</h1>
+      </div>
+      
+      <div class="warning-banner">
+        <strong>Educational Purpose Only:</strong> This demo shows how tampered QR codes can be detected. Do not use for malicious purposes.
+      </div>
+      
+      <div class="input-section">
+        <label for="fakeId">Enter Product ID to demonstrate tampering:</label>
+        <input id="fakeId" type="text" placeholder="Enter Product ID (e.g. GC01)">
+      </div>
+      
+      <div class="button-group">
+        <button id="genBtn">Generate Tampered QR</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+      
+      <div class="info-box">
+        <strong>How this works:</strong> This demo uses a tampered encryption key to generate QR codes that would be flagged as duplicates during verification. This demonstrates security measures against counterfeit products.
+      </div>
+      
+      <div class="qr-display" id="qrContainer">
+        <canvas id="qrCanvas" width="260" height="260"></canvas>
+        <div id="status" class="status-warning">&nbsp;</div>
+      </div>
     </div>
-    
-    <div class="input-group">
-      <label for="fakeId">Enter Product ID to demonstrate tampering:</label>
-      <input id="fakeId" placeholder="Enter Product ID (e.g. GC01)">
-    </div>
-    
-    <div class="button-group">
-      <button id="genBtn">Generate Tampered QR</button>
-      <button id="resetBtn">Reset</button>
-    </div>
-    
-    <div class="info-box">
-      <strong>How this works:</strong> This demo uses a tampered encryption key to generate QR codes that would be flagged as duplicates during verification. This demonstrates security measures against counterfeit products.
-    </div>
-    
-    <div class="qr-container" id="qrContainer">
-      <canvas id="qrCanvas" width="260" height="260"></canvas>
-      <p id="status" class="status-warning">&nbsp;</p>
-    </div>
-  </div>
 
-  <footer>
-    <p>© 2025 Secure QR System - Educational Demo</p>
-    <p>This demonstration shows security measures, not encourages misuse.</p>
-  </footer>
+    <!-- Right Panel - Technical Details -->
+    <div class="tech-panel">
+      <div class="tech-section">
+        <h3>📁 Files Loaded</h3>
+        <ul class="file-list">
+          <li>dupl.html</li>
+          <li>crypto-js.min.js</li>
+          <li>qrcode.min.js</li>
+        </ul>
+      </div>
+
+      <div class="tech-section">
+        <h3>🌐 Network Requests</h3>
+        <table class="request-table">
+          <tr>
+            <th>Request URL</th>
+            <td>https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js</td>
+          </tr>
+          <tr>
+            <th>Request Method</th>
+            <td>GET</td>
+          </tr>
+          <tr>
+            <th>Status Code</th>
+            <td>200 <span class="security-badge">OK</span></td>
+          </tr>
+          <tr>
+            <th>Referrer Policy</th>
+            <td>strict-origin-when-cross-origin</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="tech-section">
+        <h3>📋 Response Headers</h3>
+        <div class="console-output">
+          <div class="console-line">content-type: application/javascript; charset=utf-8</div>
+          <div class="console-line">cache-control: public, max-age=31536000</div>
+          <div class="console-line">access-control-allow-origin: *</div>
+        </div>
+      </div>
+
+      <div class="tech-section">
+        <h3>💻 Console Output</h3>
+        <div class="console-output">
+          <div class="console-line">> QR Code library loaded successfully</div>
+          <div class="console-line">> CryptoJS library initialized</div>
+          <div class="console-line console-warning">> Security: Demo mode active - generating tampered QR codes</div>
+          <div class="console-line">> Ready for user input...</div>
+        </div>
+      </div>
+
+      <div class="tech-section">
+        <h3>📊 Affected Resources</h3>
+        <div class="resources-list">
+          <strong>Request:</strong> qrcode.min.js<br>
+          <strong>Status:</strong> Loaded successfully from CDN
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: var(--gray);">
+          Learn more: <a href="#" style="color: var(--primary);">CORB explainer</a>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2025 Secure QR System - Educational Demo | This demonstration shows security measures, not encourages misuse.</p>
+    </footer>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const AES_KEY = "MY_SECRET_AES_KEY"; // same as other pages
+      const AES_KEY = "MY_SECRET_AES_KEY";
       const fakeInput = document.getElementById('fakeId');
       const genBtn = document.getElementById('genBtn');
       const resetBtn = document.getElementById('resetBtn');
@@ -248,12 +386,18 @@
       const canvas = document.getElementById('qrCanvas');
       const qrContainer = document.getElementById('qrContainer');
 
-      // Defensive check: ensure QRCode library is available
-      if (typeof QRCode === 'undefined') {
-        status.innerText = '❌ QRCode library failed to load. Check internet or CDN.';
+      // Library availability check
+      if (typeof QRCode === 'undefined' || typeof CryptoJS === 'undefined') {
+        status.innerText = '❌ Required libraries failed to load. Please check your internet connection.';
+        status.className = 'status-warning';
         genBtn.disabled = true;
         return;
       }
+
+      console.log('QR Code library loaded successfully');
+      console.log('CryptoJS library initialized');
+      console.warn('Security: Demo mode active - generating tampered QR codes');
+      console.log('Ready for user input...');
 
       genBtn.addEventListener('click', function () {
         const id = fakeInput.value.trim();
@@ -276,15 +420,17 @@
           QRCode.toCanvas(canvas, fakeCipher, { width: 240, margin: 1 }, function (error) {
             if (error) {
               console.error('QR generation error:', error);
-              status.innerText = '❌ Failed to generate QR: ' + (error && error.message ? error.message : error);
+              status.innerText = '❌ Failed to generate QR: ' + (error.message || error);
               status.className = 'status-warning';
             } else {
               status.innerHTML = '⚠️ <strong>Tampered QR Generated</strong> — This would be flagged as <strong>DUPLICATE/INVALID</strong> during verification!';
               status.className = 'status-warning';
+              console.log(`Generated tampered QR for product ID: ${id}`);
+              console.warn('SECURITY WARNING: This QR code uses tampered encryption and would be rejected by verification systems');
             }
           });
         } catch (e) {
-          console.error(e);
+          console.error('Unexpected error:', e);
           status.innerText = '❌ Unexpected error. See console for details.';
           status.className = 'status-warning';
         }
@@ -298,6 +444,8 @@
         // Clear canvas
         const context = canvas.getContext('2d');
         context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        console.log('Demo reset - ready for new input');
       });
     });
   </script>
